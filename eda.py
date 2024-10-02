@@ -7,6 +7,9 @@ from nltk.stem import WordNetLemmatizer
 import re
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.model_selection import train_test_split
+import toml
+
+secrets = toml.load(r'C:\Users\aless\Desktop\final project\Final-Project---Luis-Augustin-Ale\.streamlit\secrets.toml')
 
 df = pd.read_csv("hf://datasets/PrkhrAwsti/Twitter_Sentiment_3M/twitter_dataset.csv")
 
