@@ -11,19 +11,20 @@ headers = {
 
 # Function to clean the entries and extract date and text
 def clean_entries_with_dates(list_of_elem):
-    clean_data = []
-    for element in list_of_elem:
-        content = element.get('content', [])
-        item_content = content.get('itemContent', {})
+    clean_data = []                                                                              
+    for element in list_of_elem:                                                                  
+        content = element.get('content', [])                                                      # Extract "content" data
+        item_content = content.get('itemContent', {})                                             # Extract "itemContent" data
         if 'tweet_results' not in item_content or 'result' not in item_content['tweet_results']: 
-            continue
-        result = item_content['tweet_results']['result']
+            continue                                                                              # Skip if "tweet_results" or "result" missing
+        result = item_content['tweet_results']['result']                                          # Extract "tweet_results" content
         if 'legacy' not in result or 'full_text' not in result['legacy']: 
-            continue
-        full_text = result['legacy']['full_text']
-        post_date = result['legacy']['created_at']
-        clean_data.append((post_date, full_text))
-    return clean_data
+            continue                                                                              # Skip if "legacy" or "full_text" missing
+        full_text = result['legacy']['full_text']                                                 # Extract full tweet text
+        post_date = result['legacy']['created_at']                                                # Extract tweet creation date
+        clean_data.append((post_date, full_text))                                                 
+    return clean_data                                                                             
+
 
 def main():
     st.title("Tweets Sentiment Test")
@@ -51,7 +52,7 @@ def main():
         else:
             # Pass the keyword to the API as the search phrase
             user_search_phrase = keyword  # User input from the search box
-            querystring = {"query": user_search_phrase, "section": 'latest', "limit": "20"}  # Default filters
+            querystring = {"query": user_search_phrase, "section": 'latest', "limit": "20"}  # Default filters (to be connected later with the st.slider and the st.radio)
 
             # Call the API
             try:
@@ -62,9 +63,9 @@ def main():
                 # Clean the API response data
                 clean_data = clean_entries_with_dates(entries_api_01)
 
-                # Convert the cleaned data into a DataFrame and display it in Streamlit
+                # Convert the cleaned data into a DataFrame and display it in Streamlit  ---------- TEST PHASE 
                 df_clean_data = pd.DataFrame(clean_data, columns=['Date', 'Tweet'])
-                st.write(df_clean_data)
+                st.write(df_clean_data.head())
 
             except Exception as e:
                 st.error(f"An error occurred: {e}")

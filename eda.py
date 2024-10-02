@@ -55,6 +55,7 @@ def lemmatizar_text(tweets, lemmatizer=lemmatizer, stop_words=stop_words):
 df=df.drop(columns=["Unnamed: 0"],axis=1)
 
 df=df.dropna()
+df=df.drop_duplicates()   #añadido despues by Ale (en caso que se rompa algo)
 
 df['sentiment'] = df['sentiment'].astype(int)
 
@@ -70,13 +71,22 @@ df['lemantizedTweets']=df['proTweets'].apply(lemmatizar_text)
 
 df=df.drop(columns=["proTweets"],axis=1)
 
-lista_tweets=df['lemantizedTweets']
+lista_tweets=df['lemantizedTweets']                                           
+lista_tweets = [" ".join(tweet) for tweet in lista_tweets]
+X_train, X_test, y_train, y_test = train_test_split(lista_tweets, df["sentiment"], test_size = 0.2, random_state = 42)
+vectorizer = TfidfVectorizer(max_features = 5000, max_df = 0.8, min_df = 5)
+X_train_vectorized = vectorizer.fit_transform(X_train)
+
+""" lista_tweets=df['lemantizedTweets']
 lista_tweets = [" ".join(tweet) for tweet in lista_tweets]
 vectorizer = TfidfVectorizer(max_features = 5000, max_df = 0.8, min_df = 5)
 X = vectorizer.fit_transform(lista_tweets)
 y = df["sentiment"]
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.2, random_state = 42) """
 
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.2, random_state = 42)
+#modificado bajo consejo de felix 
+
 
 print("El script se ha ejecutado correctamente.")
-print(X_train.shape)
+print(X_train_vectorized.shape)
+
