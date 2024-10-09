@@ -39,14 +39,14 @@ align-items: center;
 """, unsafe_allow_html=True)
 # data
 df = pd.read_csv('sample_para_dashboard_prueba.csv')
-df['Ventas'] = df['Ventas'].apply(lambda x: float(x.replace('.', '').replace(',', '.')))
+'''df['Ventas'] = df['Ventas'].apply(lambda x: float(x.replace('.', '').replace(',', '.')))
 df['Costo_envio'] = df['Costo_envio'].apply(lambda x: float(x.replace('.', '').replace(',', '.')))
 df['Descuento'] = df['Descuento'].apply(lambda x: float(x.replace('.', '').replace(',', '.')))
 df['Margen'] = df['Margen'].apply(lambda x: float(x.replace('.', '').replace(',', '.')))
 df['Utilidad'] = df['Utilidad'].apply(lambda x: float(x.replace('.', '').replace(',', '.')))
 df['Precio_costo'] = df['Precio_costo'].apply(lambda x: float(x.replace('.', '').replace(',', '.')))
 df['fecha_envio'] = pd.to_datetime(df['fecha_envio'], format='%d/%m/%Y')
-df = df.sort_values('fecha_envio')
+df = df.sort_values('fecha_envio')'''
 # Sidebar
 with st.sidebar:
   st.title('🏂 Delivery Dashboard')
