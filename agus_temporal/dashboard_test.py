@@ -6,7 +6,7 @@ import seaborn as sns
 
 # Page configuration
 st.set_page_config(
-    page_title = 'Delivery Data',
+    page_title = 'Data Results',
     page_icon = "🏂",
     layout = 'wide',
     initial_sidebar_state = 'expanded'
