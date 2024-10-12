@@ -50,7 +50,7 @@ if 'search_done' not in st.session_state:
     st.session_state.search_done = False
 
 # cover image
-st.image(r"C:\Users\Agustín\Desktop\4Geeks\Clases\30. Proyecto Final\Public Environment\Final-Project---Luis-Augustin-Ale\.streamlit\images\portrait.PNG", use_column_width=True)  
+st.image(r"..\.streamlit\images\portrait.PNG", use_column_width=True)  
 
 # header
 st.header("Your Personalized X-Sentiment Analysis")
