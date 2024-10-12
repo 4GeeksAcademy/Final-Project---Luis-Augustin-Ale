@@ -2,6 +2,9 @@ import streamlit as st
 import requests
 import pandas as pd
 from translate_API_output import traducir, traducir_tweets
+import matplotlib.pyplot as plt
+from wordcloud import WordCloud
+
 
 # API configuration
 url_tweets_search_api_01 = "https://twitter-x.p.rapidapi.com/search/"
@@ -129,6 +132,12 @@ with tab1:
                 st.write("If you are looking for a comprehensive data analysis of this results, please go to the 'Get Analysis' tab placed on header.")
         else:
             st.warning("No tweets were found for the current search.")
+        st.write(f'Here you have a raw sample of your "{keyword}" tweets search')
+        st.write(df_clean_data.head(5))
+        st.write(' ')
+        st.write(f"To view the complete results of <{num_tweets}> tweets search based on the option <{option}>, please go to the 'Get Data' tab placed on header.")
+        st.write(' ')
+        st.write("If you are looking for a comprehensive data analysis of this results, please go to the 'Get Analysis' tab placed on header.")
 
 # LUIS -----------------------------------------------------------------------------------------------------------------------------------------------
 # Recibis un dataset con df_clean_data[index, 'Date', 'Tweet', 'Tweet_Likes'] y das como output df_clean_data[index, 'Date', 'Tweet', 'Tweet_Likes'] 
@@ -175,6 +184,16 @@ with tab3:
         st.write("Sentiment Analysis Results:")
         sentiment_counts = df_clean_data['Sentiment'].value_counts()
         st.bar_chart(sentiment_counts)  # Displaying a bar chart of sentiments
+        
+        # wordcloud charts (positive and negative sentiments).
+        import sys
+        import os
+        # Add the parent directory to sys.path (one level up)
+        sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'agus_temporal')))
+        # Now you can import from dashboard_charts.py
+        from dashboard_charts import plot_wordcloud
+        st.write(df_clean_data.head())
+        plot_wordcloud(df_clean_data)
         
         # Additional insights
         total_tweets = len(df_clean_data)
