@@ -113,6 +113,12 @@ with tab1:
         st.write(' ')
         st.write("If you are looking for a comprehensive data analysis of this results, please go to the 'Get Analysis' tab placed on header.")
 
+# LUIS -----------------------------------------------------------------------------------------------------------------------------------------------
+# Recibis un dataset con df_clean_data[index, 'Date', 'Tweet', 'Tweet_Likes'] y das como output df_clean_data[index, 'Date', 'Tweet', 'Tweet_Likes'] 
+# con la columna 'Tweet' ya con todo traducido
+# ------------------------------------------------------------------------------------
+
+
 # tab2: displaying the full dataset and giving the opportunity to download it, not much else
 with tab2:
     st.subheader("Data Retrieved")
@@ -123,6 +129,12 @@ with tab2:
         st.write("If you are looking for a comprehensive data analysis of this results, please go to the 'Get Analysis' tab placed on header.")
     else:
         pass
+
+
+# ALE ------------------------------------------------------------------------------------------------------------------------------------------------
+# Recibis un dataset con df_clean_data[index, 'Date', 'Tweet', 'Tweet_Likes'] y das como output df_clean_data[index, 'Date', 'Tweet', 'Tweet_Likes', 'Sentiment']
+# ------------------------------------------------------------------------------------
+
 
 # tab3: Analysing data
 with tab3:
