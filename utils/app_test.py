@@ -1,6 +1,7 @@
 import streamlit as st
 import requests
 import pandas as pd
+from translate_API_output import traducir, traducir_tweets
 import matplotlib.pyplot as plt
 from wordcloud import WordCloud
 
@@ -51,6 +52,8 @@ def clean_entries_with_dates(list_of_elem):
 # to start session_state and state if the search is completed
 if 'search_done' not in st.session_state:
     st.session_state.search_done = False
+if 'df_clean_data' not in st.session_state:
+    st.session_state.df_clean_data = None
 
 # cover image
 st.image(r"..\.streamlit\images\portrait.PNG", use_column_width=True)  
@@ -85,30 +88,50 @@ with tab1:
                     index=0, 
                     key='option', horizontal=True)
     st.write(' ')
+
+    # continue_disabled = not keyword.strip() a ver si la quito
     
     # to start searching 
     if st.button("Continue"):
-        # statement of actions to complete at the momento client click con button 'continue'
-        st.session_state.search_done = True  # successful search
-        # to pass the keyword to the API as the search phrase
-        user_search_phrase = keyword  # User input from the search box
-        querystring = {"query": user_search_phrase, "section": 'latest', "limit": "20"}  # Default filters (to be connected later with the st.slider and the st.radio)
-        # calling the API
-        try:
-            response_api_01 = requests.get(url_tweets_search_api_01, headers=headers, params=querystring)
-            response_api_01.raise_for_status()
-            entries_api_01 = response_api_01.json()['data']['search_by_raw_query']['search_timeline']['timeline']['instructions'][0]['entries']
+        if not keyword.strip():
+            st.warning("You can't search with an empty keyword. Please enter a keyword")
+        else:
+            # statement of actions to complete at the momento client click con button 'continue'
+            st.session_state.search_done = True  # successful search
+            # to pass the keyword to the API as the search phrase
+            user_search_phrase = keyword  # User input from the search box
+            querystring = {"query": user_search_phrase, "section": 'latest', "limit": "20"}  # Default filters (to be connected later with the st.slider and the st.radio)
+            # calling the API
+            try:
+                response_api_01 = requests.get(url_tweets_search_api_01, headers=headers, params=querystring)
+                response_api_01.raise_for_status()
+                entries_api_01 = response_api_01.json()['data']['search_by_raw_query']['search_timeline']['timeline']['instructions'][0]['entries']
 
-            # cleanning the API response data
-            clean_data = clean_entries_with_dates(entries_api_01)
+             # cleanning the API response data
+                clean_data = clean_entries_with_dates(entries_api_01)
 
-            # converting the cleaned data into a DataFrame
-            df_clean_data = pd.DataFrame(clean_data, columns=['Date', 'Tweet', 'Tweet_Likes'])
-        except Exception as e:
+                # converting the cleaned data into a DataFrame
+                df_clean_data = pd.DataFrame(clean_data, columns=['Date', 'Tweet', 'Tweet_Likes'])
+                df_clean_data['Tweet']=df_clean_data['Tweet'].apply(traducir)
+                st.session_state.df_clean_data=df_clean_data
+
+            except Exception as e:
                 st.error(f"An error occurred: {e}")
                 
     # to display results if search was successful
     if st.session_state.search_done:
+        df_clean_data=st.session_state.df_clean_data
+        # Check dataframe not none and empty
+        if df_clean_data is not None and not df_clean_data.empty:
+            if keyword.strip():
+                st.write(f'Here you have a sample of your "{keyword}" tweets search')
+                st.write(df_clean_data.head(5))
+                st.write(' ')
+                st.write(f"To view the complete results of <{num_tweets}> tweets search based on the option <{option}>, please go to the 'Get Data' tab placed on header.")
+                st.write(' ')
+                st.write("If you are looking for a comprehensive data analysis of this results, please go to the 'Get Analysis' tab placed on header.")
+        else:
+            st.warning("No tweets were found for the current search.")
         st.write(f'Here you have a raw sample of your "{keyword}" tweets search')
         st.write(df_clean_data.head(5))
         st.write(' ')
@@ -120,17 +143,21 @@ with tab1:
 # Recibis un dataset con df_clean_data[index, 'Date', 'Tweet', 'Tweet_Likes'] y das como output df_clean_data[index, 'Date', 'Tweet', 'Tweet_Likes'] 
 # con la columna 'Tweet' ya con todo traducido
 # ----------------------------------------------------------------------------------------------------------------------------------------------------
+# df_clean_data['Translated_Tweet']=df_clean_data['Tweet'].apply(traducir) a borrar si funciona
 
 
 # tab2: displaying the full dataset and giving the opportunity to download it, not much else
 with tab2:
     st.subheader("Data Retrieved")
     if st.session_state.search_done:
-        st.write("If you need, here you can download the full data results...")
-        st.write(df_clean_data)
-        st.write(" ")
-        st.write("If you are looking for a comprehensive data analysis of this results, please go to the 'Get Analysis' tab placed on header.")
+        df_clean_data=st.session_state.df_clean_data
+        if df_clean_data is not None and not df_clean_data.empty:
+            st.write("If you need, here you can download the full data results...")
+            st.write(df_clean_data)
+            st.write(" ")
+            st.write("If you are looking for a comprehensive data analysis of this results, please go to the 'Get Analysis' tab placed on header.")
     else:
+        st.warning("No data available to display")
         pass
 
 
@@ -142,12 +169,13 @@ with tab2:
 # tab3: Analysing data
 with tab3:
     st.subheader("Data Analysis")
-    
     if st.session_state.search_done:
+        df_clean_data=st.session_state.df_clean_data
+        if df_clean_data is not None and not df_clean_data.empty:
         # Performing sentiment analysis on the cleaned data
         # here go results from sentiment analysis, and delete this step code lines
-        import numpy as np
-        df_clean_data['Sentiment'] = np.random.choice([0, 1], size=len(df_clean_data))
+            import numpy as np
+            df_clean_data['Sentiment'] = np.random.choice([0, 1], size=len(df_clean_data))
         
         # AGUS ---------------------------------------------------------------------------------------------------------------------------------------------
         
@@ -175,4 +203,4 @@ with tab3:
         st.write(f"Total Likes on Tweets: {total_likes}")
         
     else:
-        st.write('Perform a search in tab "Set-up your Search" to get a personalized data analysis.')
+        st.warning('Perform a search in tab "Set-up your Search" to get a personalized data analysis.')
