@@ -146,6 +146,8 @@ with tab3:
         import numpy as np
         df_clean_data['Sentiment'] = np.random.choice([0, 1], size=len(df_clean_data))
         
+        # AGUS ---------------------------------------------------------------------------------------------------------------------------------------------
+        
         # Next steps, from now on, the code is to keep
         # Displaying sentiment analysis results
         st.write("Sentiment Analysis Results:")
