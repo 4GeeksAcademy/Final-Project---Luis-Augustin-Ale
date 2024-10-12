@@ -169,13 +169,12 @@ with tab2:
 # tab3: Analysing data
 with tab3:
     st.subheader("Data Analysis")
+    
     if st.session_state.search_done:
-        df_clean_data=st.session_state.df_clean_data
-        if df_clean_data is not None and not df_clean_data.empty:
         # Performing sentiment analysis on the cleaned data
         # here go results from sentiment analysis, and delete this step code lines
-            import numpy as np
-            df_clean_data['Sentiment'] = np.random.choice([0, 1], size=len(df_clean_data))
+        import numpy as np
+        df_clean_data['Sentiment'] = np.random.choice([0, 1], size=len(df_clean_data))
         
         # AGUS ---------------------------------------------------------------------------------------------------------------------------------------------
         
@@ -201,6 +200,6 @@ with tab3:
         st.write(f"Total Tweets Analyzed: {total_tweets}")
         st.write(f"Sentiment Breakdown: {sentiment_counts.to_dict()}")
         st.write(f"Total Likes on Tweets: {total_likes}")
-        
+                
     else:
         st.warning('Perform a search in tab "Set-up your Search" to get a personalized data analysis.')
