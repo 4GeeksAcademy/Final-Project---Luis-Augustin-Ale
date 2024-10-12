@@ -1,6 +1,9 @@
 import streamlit as st
 import requests
 import pandas as pd
+import matplotlib.pyplot as plt
+from wordcloud import WordCloud
+
 
 # API configuration
 url_tweets_search_api_01 = "https://twitter-x.p.rapidapi.com/search/"
@@ -50,7 +53,7 @@ if 'search_done' not in st.session_state:
     st.session_state.search_done = False
 
 # cover image
-st.image(r"C:\Users\Agustín\Desktop\4Geeks\Clases\30. Proyecto Final\Public Environment\Final-Project---Luis-Augustin-Ale\.streamlit\images\portrait.PNG", use_column_width=True)  
+st.image(r"..\.streamlit\images\portrait.PNG", use_column_width=True)  
 
 # header
 st.header("Your Personalized X-Sentiment Analysis")
@@ -106,12 +109,18 @@ with tab1:
                 
     # to display results if search was successful
     if st.session_state.search_done:
-        st.write(f'Here you have a sample of your "{keyword}" tweets search')
+        st.write(f'Here you have a raw sample of your "{keyword}" tweets search')
         st.write(df_clean_data.head(5))
         st.write(' ')
         st.write(f"To view the complete results of <{num_tweets}> tweets search based on the option <{option}>, please go to the 'Get Data' tab placed on header.")
         st.write(' ')
         st.write("If you are looking for a comprehensive data analysis of this results, please go to the 'Get Analysis' tab placed on header.")
+
+# LUIS -----------------------------------------------------------------------------------------------------------------------------------------------
+# Recibis un dataset con df_clean_data[index, 'Date', 'Tweet', 'Tweet_Likes'] y das como output df_clean_data[index, 'Date', 'Tweet', 'Tweet_Likes'] 
+# con la columna 'Tweet' ya con todo traducido
+# ----------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 # tab2: displaying the full dataset and giving the opportunity to download it, not much else
 with tab2:
@@ -124,6 +133,12 @@ with tab2:
     else:
         pass
 
+
+# ALE ------------------------------------------------------------------------------------------------------------------------------------------------
+# Recibis un dataset con df_clean_data[index, 'Date', 'Tweet', 'Tweet_Likes'] y das como output df_clean_data[index, 'Date', 'Tweet', 'Tweet_Likes', 'Sentiment']
+# ----------------------------------------------------------------------------------------------------------------------------------------------------
+
+
 # tab3: Analysing data
 with tab3:
     st.subheader("Data Analysis")
@@ -134,11 +149,24 @@ with tab3:
         import numpy as np
         df_clean_data['Sentiment'] = np.random.choice([0, 1], size=len(df_clean_data))
         
+        # AGUS ---------------------------------------------------------------------------------------------------------------------------------------------
+        
         # Next steps, from now on, the code is to keep
         # Displaying sentiment analysis results
         st.write("Sentiment Analysis Results:")
         sentiment_counts = df_clean_data['Sentiment'].value_counts()
         st.bar_chart(sentiment_counts)  # Displaying a bar chart of sentiments
+        
+        # wordcloud charts (positive and negative sentiments).
+        import sys
+        import os
+        # Add the parent directory to sys.path (one level up)
+        sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'agus_temporal')))
+        # Now you can import from dashboard_charts.py
+        from dashboard_charts import plot_wordcloud
+        st.write(df_clean_data.head())
+        plot_wordcloud(df_clean_data)
+
         
         # Additional insights
         total_tweets = len(df_clean_data)
