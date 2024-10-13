@@ -1,3 +1,5 @@
+###Copy the code for safety, to avoid braking your work :D ###
+
 import streamlit as st
 import requests
 import pandas as pd
@@ -5,6 +7,11 @@ from translate_API_output import traducir, traducir_tweets
 import matplotlib.pyplot as plt
 from wordcloud import WordCloud
 from deep_translator import GoogleTranslator
+
+import streamlit as st
+import torch
+from transformers import RobertaTokenizer
+from custom_class_final_model import CustomRobertaModel
 
 
 # API configuration
@@ -14,26 +21,29 @@ headers = {
     "x-rapidapi-host": "twitter-x.p.rapidapi.com"
 }
 
-''' ESTA PARTE IMPORTA LOS MODELOS QUE HAYA QUE IMPORTAR, PERSONALIZAR UNA VEZ OBTENIDO NUESTRO ROBERTA
+### MODEL  FROM HUGGINGfaces ###
+
 @st.cache_resource
-def load_models():
-    """
-    Cargar los modelos.
-    """
-    return 'Respuesta modelo de texto', 'Respuesta modelo multimodal'
+def load_custom_sentiment_model():
+  
+    try:
+        model_name = "AleOfDurin/final_retrained_model"
+        model = CustomRobertaModel.from_pretrained(model_name)
+        tokenizer = RobertaTokenizer.from_pretrained(model_name)
+        model.eval()  # Ensure the model is in evaluation mode
+        return model, tokenizer
+    except Exception as e:
+        st.error(f"Error loading the model: {e}")
+        return None, None
 
-def get_text_response(model=None, prompt=None, config=None, stream=True):
-    """
-    Obtener respuesta de texto 
-    """
-    return "Respuesta de texto del modelo de texto."
+# Load the model and tokenizer
+model_custom, tokenizer_custom = load_custom_sentiment_model()
 
-def get_vision_response(model=None, prompt_list=None, config={}, stream=True):
-    """
-    Obtener respuesta 
-    """
-    return "Respuesta de imagen del modelo de multimodal."
-'''
+# Check if the model was loaded successfully, otherwise exit
+if model_custom is None or tokenizer_custom is None:
+    st.stop()  # Stop the app if the model couldn't be loaded
+
+
 
 # Function to clean the entries and extract date and text
 def clean_entries_with_dates(list_of_elem):
@@ -158,7 +168,60 @@ with tab2:
 
 
 # ALE ------------------------------------------------------------------------------------------------------------------------------------------------
-# Recibis un dataset con df_clean_data[index, 'Date', 'Tweet', 'Tweet_Likes'] y das como output df_clean_data[index, 'Date', 'Tweet', 'Tweet_Likes', 'Sentiment']
+
+def predict_sentiment(model, tokenizer, sentence):
+    """
+    Use the custom model to predict sentiment of a given sentence.
+    """
+    # Tokenize the input sentence
+    inputs = tokenizer(sentence, return_tensors="pt", padding=True, truncation=True)
+    input_ids = inputs["input_ids"]
+    attention_mask = inputs["attention_mask"]
+
+    # Set model to evaluation mode
+    model.eval()
+    
+    # No gradient calculation for inference
+    with torch.no_grad():
+        outputs = model(input_ids=input_ids, attention_mask=attention_mask)
+        logits = outputs  # For custom model, it's just the logits
+    
+    # Get the predicted class (0 or 1)
+    predictions = torch.argmax(logits, dim=1)
+    return predictions.item()
+
+def analyze_sentiments(model, tokenizer, df):
+    
+    label_mapping = {0: "Negative", 1: "Positive"}  
+    sentiments = []
+
+    for tweet in df['Tweet']:
+        # Get the predicted sentiment label
+        predicted_label = predict_sentiment(model, tokenizer, tweet)
+        sentiment = label_mapping.get(predicted_label, "Unknown")
+        sentiments.append(sentiment)
+    
+    # Add the new column to the DataFrame
+    df['Sentiment'] = sentiments
+    return df
+
+# Applying the model in your Streamlit app
+if st.session_state.search_done and model_custom is not None:
+    df_clean_data = st.session_state.df_clean_data
+
+    # Ensure DataFrame exists and has content before analysis
+    if df_clean_data is not None and not df_clean_data.empty:
+        # Analyze sentiments using the loaded model
+        df_clean_data = analyze_sentiments(model_custom, tokenizer_custom, df_clean_data)
+        
+        # Update the session state with the new DataFrame
+        st.session_state.df_clean_data = df_clean_data
+        
+        # Refresh display after adding sentiment analysis
+        st.write("Sentiment Analysis Completed:")
+        st.write(st.session_state.df_clean_data.head())
+
+
 # ----------------------------------------------------------------------------------------------------------------------------------------------------
 
 
