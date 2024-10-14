@@ -12,6 +12,7 @@ import streamlit as st
 import torch
 from transformers import RobertaTokenizer
 from custom_class_final_model import CustomRobertaModel
+from model_load_apply import load_custom_sentiment_model, predict_sentiment, analyze_sentiments
 
 
 # API configuration
@@ -22,26 +23,20 @@ headers = {
 }
 
 ### MODEL  FROM HUGGINGfaces ###
-
 @st.cache_resource
-def load_custom_sentiment_model():
-  
+def get_model_and_tokenizer():
     try:
-        model_name = "AleOfDurin/final_retrained_model"
-        model = CustomRobertaModel.from_pretrained(model_name)
-        tokenizer = RobertaTokenizer.from_pretrained(model_name)
-        model.eval()  # Ensure the model is in evaluation mode
-        return model, tokenizer
-    except Exception as e:
-        st.error(f"Error loading the model: {e}")
+        model_custom, tokenizer_custom = load_custom_sentiment_model()
+    except RuntimeError as e:
+        st.error(str(e))
         return None, None
-
-# Load the model and tokenizer
-model_custom, tokenizer_custom = load_custom_sentiment_model()
-
+    
+    return model_custom, tokenizer_custom
+# Call the cached function
+model_custom, tokenizer_custom = get_model_and_tokenizer()
 # Check if the model was loaded successfully, otherwise exit
 if model_custom is None or tokenizer_custom is None:
-    st.stop()  # Stop the app if the model couldn't be loaded
+        st.stop()  # Stop the app if the model couldn't be loaded
 
 
 
@@ -169,43 +164,7 @@ with tab2:
 
 # ALE ------------------------------------------------------------------------------------------------------------------------------------------------
 
-def predict_sentiment(model, tokenizer, sentence):
-    """
-    Use the custom model to predict sentiment of a given sentence.
-    """
-    # Tokenize the input sentence
-    inputs = tokenizer(sentence, return_tensors="pt", padding=True, truncation=True)
-    input_ids = inputs["input_ids"]
-    attention_mask = inputs["attention_mask"]
-
-    # Set model to evaluation mode
-    model.eval()
-    
-    # No gradient calculation for inference
-    with torch.no_grad():
-        outputs = model(input_ids=input_ids, attention_mask=attention_mask)
-        logits = outputs  # For custom model, it's just the logits
-    
-    # Get the predicted class (0 or 1)
-    predictions = torch.argmax(logits, dim=1)
-    return predictions.item()
-
-def analyze_sentiments(model, tokenizer, df):
-    
-    label_mapping = {0: "Negative", 1: "Positive"}  
-    sentiments = []
-
-    for tweet in df['Tweet']:
-        # Get the predicted sentiment label
-        predicted_label = predict_sentiment(model, tokenizer, tweet)
-        sentiment = label_mapping.get(predicted_label, "Unknown")
-        sentiments.append(sentiment)
-    
-    # Add the new column to the DataFrame
-    df['Sentiment'] = sentiments
-    return df
-
-# Applying the model in your Streamlit app
+# Applying the model in  Streamlit
 if st.session_state.search_done and model_custom is not None:
     df_clean_data = st.session_state.df_clean_data
 
