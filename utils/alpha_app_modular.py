@@ -1,5 +1,4 @@
 ###Copy the code for safety, to avoid braking your work :D ###
-
 import streamlit as st
 import requests
 import pandas as pd
